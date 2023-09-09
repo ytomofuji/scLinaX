@@ -20,3 +20,5 @@ Imports:
     stringr,
     tibble,
     readr
+Depends: 
+    R (>= 2.10)

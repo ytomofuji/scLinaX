@@ -32,7 +32,7 @@ utils::globalVariables(c("ALT", "ALT1", "ALT2", "ALTcount", "ALTratio", "A_allel
 #'   * ALTcount: Allelic read count of the alternative allele
 #'   * OTHcount: Allelic read count of the other allele
 #'   * Sample_ID: Sample ID
-#' @param peak_bed A dataframe (tibble) containing single-cell chromatin accessibility data. This dataframe should include the following columns:
+#' @param peak_data A dataframe (tibble) containing peak information called from the single-cell chromatin accessibility data. This dataframe should include the following columns:
 #'   * start: Genomic position of the start of the peak (1-base)
 #'   * end: Genomic position of the end of the peak (1-base)
 #'   * Peak_name: Name of the peak
@@ -42,7 +42,7 @@ utils::globalVariables(c("ALT", "ALT1", "ALT2", "ALTcount", "ALTratio", "A_allel
 #' @inheritParams run_scLinaX
 #' @export
 
-run_scLinaX_multi<-function(scLinaX_summary,scLinaX_obj,ATAC_ASE_data,peak_bed,SNP_DETECTION_DP=30,SNP_DETECTION_MAF=0.1){
+run_scLinaX_multi<-function(scLinaX_summary,scLinaX_obj,ATAC_ASE_data,peak_data,SNP_DETECTION_DP=30,SNP_DETECTION_MAF=0.1){
 
 #prepare scATAC ASCA data
 ref_snp<-unique(scLinaX_summary$Reference_SNP)
@@ -65,11 +65,11 @@ QCpassed_var_cell<-filter(per_sample_SNP,TOTALcount>=SNP_DETECTION_DP)%>%
   dplyr::select(SNP_ID,Sample_ID)
 
 # prepare peak data
-annotated_peak_range<-GenomicRanges::GRanges(seqnames=rep('chrX',nrow(peak_bed)),
+annotated_peak_range<-GenomicRanges::GRanges(seqnames=rep('chrX',nrow(peak_data)),
                               ranges=IRanges::IRanges(
-                                start=peak_bed$start,end=peak_bed$end),
-                              strand=rep('+',nrow(peak_bed)))
-names(annotated_peak_range)<-peak_bed$Peak_name
+                                start=peak_data$start,end=peak_data$end),
+                              strand=rep('+',nrow(peak_data)))
+names(annotated_peak_range)<-peak_data$Peak_name
 
 # extract only SNPs overlapped with Peak
 pos_list<-dplyr::select(ase_data,SNP_ID,POS)%>%dplyr::distinct()
@@ -83,7 +83,7 @@ overlaps<-IRanges::findOverlaps(ASE_GR, annotated_peak_range)
 query<-ASE_GR[overlaps@from,]%>%names()
 subjects<-annotated_peak_range[overlaps@to,]%>%names()
 
-peak_gene_info<-peak_bed%>%dplyr::select(Peak_name,Gene)
+peak_gene_info<-peak_data%>%dplyr::select(Peak_name,Gene)
 SNP_Peak_overlap<-tibble::tibble(SNP_ID=query,Peak_name=subjects)%>%left_join(peak_gene_info,by="Peak_name")
 
 QCed_df<-dplyr::left_join(QCpassed_var_cell,ase_data,by=c("SNP_ID","Sample_ID"))%>%

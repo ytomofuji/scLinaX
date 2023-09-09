@@ -8,7 +8,7 @@ run_scLinaX_multi(
   scLinaX_summary,
   scLinaX_obj,
   ATAC_ASE_data,
-  peak_bed,
+  peak_data,
   SNP_DETECTION_DP = 30,
   SNP_DETECTION_MAF = 0.1
 )
@@ -31,7 +31,7 @@ run_scLinaX_multi(
 \item Sample_ID: Sample ID
 }}
 
-\item{peak_bed}{A dataframe (tibble) containing single-cell chromatin accessibility data. This dataframe should include the following columns:
+\item{peak_data}{A dataframe (tibble) containing peak information called from the single-cell chromatin accessibility data. This dataframe should include the following columns:
 \itemize{
 \item start: Genomic position of the start of the peak (1-base)
 \item end: Genomic position of the end of the peak (1-base)
