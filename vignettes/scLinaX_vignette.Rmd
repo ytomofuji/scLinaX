@@ -1,0 +1,159 @@
+---
+title: "scLinaX_vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{scLinaX_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## About scLinaX
+One of the two X chromosomes of females is silenced through X chromosome inactivation (XCI) to compensate for the difference in the dosage between sexes. Among the X-linked genes, several genes escape from XCI. scLinaX is a computational tool designed for the quantification of the escape from X chromosome inactivation using single-cell RNA sequencing data obtained through droplet-based methodologies.
+
+
+## Usage
+First, load the scLinaX package.
+```{r setup}
+library(scLinaX)
+```
+
+For demo, load the test dataset included within the scLinaX package as well.
+```{r}
+data("XCI_ref")
+data("AIDA_QCREF")
+data("multiome_ASE_df")
+data("multiome_Annotation")
+```
+
+Let's run scLinaX! The result will be a list object including `$reuslt` and `$raw_exp_result` which are used in the subsequent process.
+```{r}
+scLinaX_res<-run_scLinaX(ASE_df=multiome_ASE_df,XCI_ref=XCI_ref,QCREF=AIDA_QCREF,
+                             Inactive_Gene_ratio_THR=0.05,SNP_DETECTION_DP=30,SNP_DETECTION_MAF=0.1,QC_total_allele_THR=10,
+                             HE_allele_cell_number_THR=50,REMOVE_ESCAPE=TRUE,PVAL_THR=0.01,RHO_THR=0.5)
+
+
+head(scLinaX_res$result)
+
+
+head(scLinaX_res$raw_exp_result)
+```
+
+
+Above results should be summarized using the `summarize_scLinaX` function before analysis.
+If no Annotation is supplied, this function returns the ratio of expression from the inactivated X chromosome for all cells.
+If Annotation is supplied, this function returns the ratio of expression from the inactivated X chromosome for each cell annotation.
+```{r}
+PBMC_summary<-summarize_scLinaX(scLinaX_res,QC_total_allele_THR=10,Annotation=NULL)
+head(PBMC_summary)
+
+
+cell_type_summary<-summarize_scLinaX(scLinaX_res,QC_total_allele_THR=10,Annotation=multiome_Annotation)
+head(cell_type_summary)
+```
+
+
+Let's check the result of the scLinaX analysis.
+The `minor_allele_ratio` (ratio of the expression from Xi) tend to high in the escapee genes compared to other nonPAR genes as expected.
+
+
+```{r}
+if (require("ggplot2")) {
+PBMC_summary$Gene_class<-factor(PBMC_summary$Gene_class,levels=c("PAR1","nonPAR_escape","nonPAR_variable","nonPAR_inactive","nonPAR_unknown","PAR2"))
+
+p<-ggplot(PBMC_summary,aes(x=Gene_class,y=minor_allele_ratio,fill=Gene_class))+
+  geom_boxplot()+
+theme_bw()+
+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 10),
+axis.text.y = element_text(size = 10),aspect.ratio=2/3,legend.position="none")+
+scale_fill_manual(
+	values=c("PAR1"="#ae2d68","nonPAR_escape"="#ff1700","nonPAR_variable"="#ffa600",
+	"nonPAR_inactive"="#9db300","nonPAR_unknown"="#666666","PAR2"="#729efd"))+
+  xlab("")+ylab("ratio of the expression from Xi")
+p
+}
+```
+
+
+
+## About scLinaX-multi
+XCI induces chromatin-level transcriptional repression on Xi, while the transcriptionally active chromatin state on Xi can be observed under the escape from XCI. scLinaX-multi is a computational tool designed for the quantification of the escape from X chromosome inactivation at the chromatin accessibility level using single-cell multi-omics (RNA + ATAC) data such as 10X multiome.
+
+
+## Usage
+For demo, load the additional test dataset included within the scLinaX package.
+```{r}
+data("multiome_ATAC_ASE_data")
+data("multiome_peak_data")
+```
+
+
+Let's run scLinaX-multi! Note that scLinaX-multi takes the output of scLinaX as an input.
+The result will be a dataframe (tibble) containing raw per-cell scLinaX-multi results. which are used in the subsequent process.
+
+```{r}
+scLinaX_multi_res<-run_scLinaX_multi(PBMC_summary,scLinaX_res,multiome_ATAC_ASE_data,
+                              multiome_peak_data,SNP_DETECTION_DP=30,SNP_DETECTION_MAF=0.10)
+
+head(scLinaX_multi_res)
+```
+
+
+As in the case of the scLinaX analysis, above results should be summarized using the `summarize_scLinaX_multi` function before analysis.
+If no Annotation is supplied, this function returns the ratio of accessible chromatin derived from the inactivated X chromosome for all cells.
+If Annotation is supplied, this function returns the ratio of accessible chromatin derived from the inactivated X chromosome for each cell annotation.
+
+```{r}
+ATAC_PBMC_summary<-summarize_scLinaX_multi(scLinaX_multi_res,QC_total_allele_THR=10,Annotation=NULL)
+head(ATAC_PBMC_summary)
+
+
+ATAC_cell_type_summary<-summarize_scLinaX_multi(scLinaX_multi_res,QC_total_allele_THR=10,Annotation=multiome_Annotation)
+head(ATAC_cell_type_summary)
+```
+
+
+Let's check the result of the scLinaX-multi analysis.
+The `minor_allele_ratio` (ratio of the accessible chromatin from Xi) tend to high in the escapee genes compared to other nonPAR genes as expected.
+
+
+```{r}
+if (require("ggplot2")) {
+ATAC_PBMC_summary$Gene_class<-factor(ATAC_PBMC_summary$Gene_class,levels=c("PAR1","nonPAR_escape","nonPAR_variable","nonPAR_inactive","nonPAR_unknown","PAR2"))
+
+p<-ggplot(ATAC_PBMC_summary,aes(x=Gene_class,y=minor_allele_ratio,fill=Gene_class))+
+  geom_boxplot()+
+theme_bw()+
+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 10),
+axis.text.y = element_text(size = 10),aspect.ratio=2/3,legend.position="none")+
+scale_fill_manual(
+	values=c("PAR1"="#ae2d68","nonPAR_escape"="#ff1700","nonPAR_variable"="#ffa600",
+	"nonPAR_inactive"="#9db300","nonPAR_unknown"="#666666","PAR2"="#729efd"))+
+  xlab("")+ylab("ratio of the accessible chromatin derived from Xi")
+p
+}
+```
+
+
+
+## QC of the reference genes
+In scLinaX, inactivated X chromosome was estimated based on the allelic expression pattern of the X-linked genes completely subjected to XCI.
+We used an annotation in Tukiainen et al., Nature, 2017, with additional manual curation.
+To remove the potential escapee genes from the above list, we performed additional QC based on the scASE data.
+Although we supply the `AIDA_QCREF` object which was generated from the AIDA dataset, user can also make their own data for gene QC.
+Here, we demonstrated the usage of the function for making such data.
+Note that we strongly recommend using this function with a large number of samples.
+For demonstration, we use this function for a multiome dataset, a single sample dataset, but this is not recommended in the actual analysis.
+
+## Usage
+```{r}
+Multiome_QCREF<-run_RefGeneQC(multiome_ASE_df,XCI_ref,SNP_DETECTION_DP=30,SNP_DETECTION_MAF=0.1,SAMPLE_NUM_THR=1,HE_allele_cell_number_THR=50,QC_total_allele_THR=10)
+
+head(Multiome_QCREF)
+```

@@ -22,3 +22,8 @@ Imports:
     readr
 Depends: 
     R (>= 2.10)
+Suggests: 
+    knitr,
+    rmarkdown,
+    ggplot2
+VignetteBuilder: knitr
