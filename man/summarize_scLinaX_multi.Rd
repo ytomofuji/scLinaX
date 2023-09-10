@@ -17,6 +17,38 @@ summarize_scLinaX_multi(phased_df, QC_total_allele_THR = 10, Annotation = NULL)
 \item Annotation
 }}
 }
+\value{
+A dataframe (tibble) containing scLinaX-multi results.
+
+If no Annotation is supplied, this function returns the ratio of expression from the inactivated X chromosome for all cells.
+If Annotation is supplied, this function returns the ratio of expression from the inactivated X chromosome for each cell annotation.
+
+The dataframe includes the following columns:
+\itemize{
+\item Sample_ID: Sample ID
+\item SNP_ID: SNP identifier
+\item CHR: PAR or nonPAR
+\item POS: Genomic position of the SNP (GRCh38)
+\item REF: Reference allele of the SNP {A,T,G,C}
+\item ALT: Alternative allele of the SNP {A,T,G,C}
+\item REFcount: Allelic read count of the reference allele
+\item ALTcount: Allelic read count of the alternative allele
+\item OTHcount: Allelic read count of the other allele
+\item Peak_name: Name of the peak
+\item Gene: Nearest gene to the peak
+\item XCI_status: XCI status {escape, variable, inactive, unknown}
+\item Gene_class: XCI status combined with CHR information {PAR1, nonPAR_escape, nonPAR_variable, nonPAR_inactive, nonPAR_unknown, PAR2}
+\item A_allele_count, B_allele_count: Total allele count of allele A and B
+\item Total_allele_count: Total allele count
+\item minor_allele_ratio: Ratio of the accessible chromatin derived from the allele (A, B) with lower expression (=Ratio of the accessible chromatin derived from Xi)
+\item Major_allele: The allele with the higher read count {A, B}
+}
+
+If in per-cell annotation mode, it includes the additional column:
+\itemize{
+\item Annotation: Cell annotation
+}
+}
 \description{
 Summarize scLinaX-multi results
 }

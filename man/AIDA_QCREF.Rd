@@ -7,8 +7,8 @@
 \format{
 \subsection{\code{AIDA_QCREF}}{
 
-\describe{
 A dataframe (tibble) with the following columns:
+\describe{
 \item{Gene}{Gene name}
 \item{Mean_AR_target}{Average ratio of expression from Xi across other candidate reference genes when the SNPs on the gene were used as references}
 \item{Mean_AR_reference}{Average ratio of expression from Xi for the gene when SNPs on other candidate reference genes were used as references}

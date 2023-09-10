@@ -8,6 +8,7 @@
 \subsection{\code{multiome_peak_data}}{
 
 A dataframe (tibble) with the following columns:
+' \describe{
 \item{start}{Genomic position of the start of the peak}
 \item{end}{Genomic position of the end of the peak}
 \item{Peak_name}{Name of the peak}
@@ -23,6 +24,6 @@ A dataframe (tibble) with the following columns:
 multiome_peak_data
 }
 \description{
-
+A dataframe (tibble) containing peak information obtained from single-cell chromatin accessibility data. This data was generated from 10X multiome data using Signac, following the tutorial at \url{https://stuartlab.org/signac/}.
 }
 \keyword{datasets}

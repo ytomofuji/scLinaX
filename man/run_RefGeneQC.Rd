@@ -48,6 +48,20 @@ Genes evaluated in at least \code{SAMPLE_NUM_THR} samples are used for the calcu
 Note that this count is calculated with cells successfully assigned to the group based on the inactivated X chromosome.
 This filter is applied in the final step of scLinax and differs from "SNP_DETECTION_DP". Default: 10.}
 }
+\value{
+A dataframe (tibble) with the following columns:
+\itemize{
+\item Gene: Gene name
+\item Mean_AR_target, SD_AR_target: Mean and standard deviation of the ratio of expression from Xi across other candidate reference genes when the SNPs on the gene were used as references
+\item Mean_AR_reference, SD_AR_reference: Mean and standard deviation of the ratio of expression from Xi for the gene when SNPs on other candidate reference genes were used as references
+\item Mean_Total_allele_target, SD_Total_allele_target: Mean and standard deviation of the total allele count across data points when calculating the ARs defined above for \code{target}.
+\item Mean_Total_allele_reference, SD_Total_allele_reference: Mean and standard deviation of the total allele count across data points when calculating the ARs defined above for \code{reference}.
+\item Sample_N_target: Number of samples calculating the ARs defined above for \code{target}.
+\item Sample_N_reference: Number of samples calculating the ARs defined above for \code{reference}.
+\item Count_target: Number of data points calculating the ARs defined above for \code{target}.
+\item Count_reference: Number of data points calculating the ARs defined above for \code{reference}.
+}
+}
 \description{
 Run Gene Quality Control (QC) function
 }

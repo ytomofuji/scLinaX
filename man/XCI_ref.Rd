@@ -7,8 +7,8 @@
 \format{
 \subsection{\code{XCI_ref}}{
 
-\describe{
 A dataframe (tibble) with the following columns:
+\describe{
 \item{Gene}{Gene name}
 \item{XCI_status}{XCI status: escape, variable, inactive}
 ...

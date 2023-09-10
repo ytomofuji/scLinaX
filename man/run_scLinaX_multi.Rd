@@ -2,7 +2,7 @@
 % Please edit documentation in R/scLinaX_multi.R
 \name{run_scLinaX_multi}
 \alias{run_scLinaX_multi}
-\title{Run scLinaX-multi using the scATAC data and output from scLinaX}
+\title{Run scLinaX-multi using the scATAC data and output from scLinaX (Currently, only single sample mode is implemented).}
 \usage{
 run_scLinaX_multi(
   scLinaX_summary,
@@ -43,6 +43,29 @@ run_scLinaX_multi(
 
 \item{SNP_DETECTION_MAF}{Threshold for the minor allele count of the scASE data. SNP–Sample pairs with a minor allele ratio between "SNP_DETECTION_MAF" and "1 - SNP_DETECTION_MAF" are used for the analysis. Default: 0.1.}
 }
+\value{
+A dataframe (tibble) containing raw per-cell scLinaX-multi results.
+
+This dataframe should include the following columns:
+\itemize{
+\item cell_barcode: Cell barcode
+\item Sample_ID: Sample ID
+\item SNP_ID: SNP identifier
+\item CHR: PAR or nonPAR
+\item POS: Genomic position of the SNP (GRCh38)
+\item REF: Reference allele of the SNP {A,T,G,C}
+\item ALT: Alternative allele of the SNP {A,T,G,C}
+\item REFcount: Allelic read count of the reference allele
+\item ALTcount: Allelic read count of the alternative allele
+\item OTHcount: Allelic read count of the other allele
+\item Peak_name: Name of the peak
+\item Gene: Nearest gene to the peak
+\item XCI_status: XCI status {escape, variable, inactive, unknown}
+\item Gene_class: XCI status combined with CHR information {PAR1, nonPAR_escape, nonPAR_variable, nonPAR_inactive, nonPAR_unknown, PAR2}
+\item Xa: Information of the activated X chromosome {Allele_A, Allele_B}
+\item A_allele_count, B_allele_count: Total allele count of allele A and B
+}
+}
 \description{
-Run scLinaX-multi using the scATAC data and output from scLinaX
+Run scLinaX-multi using the scATAC data and output from scLinaX (Currently, only single sample mode is implemented).
 }

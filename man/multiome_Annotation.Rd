@@ -7,8 +7,8 @@
 \format{
 \subsection{\code{multiome_Annotation}}{
 
-\describe{
 A dataframe (tibble) with the following columns:
+\describe{
 \item{cell_barcode}{Cell barcode}
 \item{Annotation}{Annotation of the cell}
 ...

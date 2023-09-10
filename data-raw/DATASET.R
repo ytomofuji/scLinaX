@@ -14,6 +14,7 @@ AIDA_QCREF<-read_tsv("C:/Users/YoshihikoTomofuji/Desktop/Analysis/scLinaX/Origin
 
 multiome_Annotation<-read_tsv("C:/Users/YoshihikoTomofuji/Desktop/Analysis/scLinaX/Original_Data/Multiome.rm.plt.ery.db.metadata.tsv.gz")%>%
   dplyr::select(cell_barcode,predicted.id)
+colnames(multiome_Annotation)<-c("cell_barcode","Annotation")
 
 multiome_ATAC_ASE_data<-read_tsv("C:/Users/YoshihikoTomofuji/Desktop/Analysis/scLinaX/Original_Data/Multiome_ATAC_QC_passed_SNP_df.tsv.gz")%>%
   mutate(Sample_ID="Multiome")
@@ -27,6 +28,6 @@ multiome_peak_data<-read_tsv("C:/Users/YoshihikoTomofuji/Desktop/Analysis/scLina
 usethis::use_data(multiome_ASE_df)
 usethis::use_data(XCI_ref)
 usethis::use_data(AIDA_QCREF)
-usethis::use_data(multiome_Annotation)
+usethis::use_data(multiome_Annotation,overwrite = TRUE)
 usethis::use_data(multiome_ATAC_ASE_data)
 usethis::use_data(multiome_peak_data)
