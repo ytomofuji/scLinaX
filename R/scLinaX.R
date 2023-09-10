@@ -1,5 +1,5 @@
 #' @importFrom dplyr filter select group_by summarize ungroup mutate left_join
-#' @importFrom dplyr arrange distinct slice pull rename inner_join bind_rows
+#' @importFrom dplyr arrange distinct slice pull rename inner_join bind_rows n n_distinct case_when
 #' @importFrom purrr map
 #' @importFrom igraph graph clusters
 #' @importFrom tibble tibble
@@ -19,7 +19,7 @@ utils::globalVariables(c("ALT", "ALT1", "ALT2", "ALTcount", "ALTratio", "A_allel
 "Sample_N", "TOTALcount", "Total_A_allele", "Total_B_allele", "Total_allele",
 "Total_allele_count", "Used_as_refGene", "Used_as_refSNP", "XCI_annotation",
 "XCI_ref", "XCI_status", "Xa", "case_when", "cell_barcode", "data", "flip_or_not",
-"median", "minor_allele_ratio", "n", "n_distinct", "rho", "tag"))
+"median", "minor_allele_ratio", "n", "dplyr::n_distinct", "rho", "tag"))
 
 
 #' QC to remove potential escapee genes from reference gene set
@@ -90,7 +90,7 @@ make_per_SNP_sample_df<-function(QCed_df){
 
   per_SNP_sample<-QCed_df%>%
     dplyr::group_by(Gene,Gene_class,Sample_ID,SNP_ID)%>%
-    dplyr::summarize(Count=n())%>%
+    dplyr::summarize(Count=dplyr::n())%>%
     dplyr::arrange(-Count)%>%
     dplyr::ungroup()
 
@@ -163,7 +163,7 @@ ref_snp_qc<-expdf_for_clst%>%
   dplyr::filter(REFcount+ALTcount>=QC_total_allele_THR)%>%
   dplyr::mutate(minor_allele_ratio=ifelse(REFcount>ALTcount,ALTcount/(REFcount+ALTcount),REFcount/(REFcount+ALTcount)))%>%
   dplyr::group_by(tag)%>%
-  dplyr::summarize(Median_Minor_allele_ratio=median(minor_allele_ratio),Mean_Minor_allele_ratio=mean(minor_allele_ratio),NUM_SNP=n())
+  dplyr::summarize(Median_Minor_allele_ratio=median(minor_allele_ratio),Mean_Minor_allele_ratio=mean(minor_allele_ratio),NUM_SNP=dplyr::n())
 
 #Calculate correlation of minor allele ratio for all of the reference SNPs
 if(length(cand_ref_snps)>1){
@@ -350,7 +350,7 @@ for(CLST_ID in unique(CLST1)){
         TRUE~"nonPAR"
       ))%>%
       dplyr::group_by(Sample_ID,SNP_ID,CHR,POS,REF,ALT,Gene,XCI_status,Gene_class,Used_as_refGene,Used_as_refSNP)%>%
-      dplyr::summarize(Total_A_allele=sum(A_allele),Total_B_allele=sum(B_allele),Total_allele=(sum(A_allele)+sum(B_allele)),Expressing_cells=n_distinct(cell_barcode))%>%
+      dplyr::summarize(Total_A_allele=sum(A_allele),Total_B_allele=sum(B_allele),Total_allele=(sum(A_allele)+sum(B_allele)),Expressing_cells=dplyr::n_distinct(cell_barcode))%>%
       ungroup()%>%
       dplyr::mutate(minor_allele_ratio=ifelse(Total_A_allele>Total_B_allele,Total_B_allele/Total_allele,Total_A_allele/Total_allele))%>%
       dplyr::mutate(Reference_Gene=str_c(reference_genes,collapse=","),Num_Reference_Gene=length(unique(reference_genes)),
@@ -363,7 +363,7 @@ for(CLST_ID in unique(CLST1)){
     # evaluate whether the inter-SNP phasing increased the number of cells used for analysis
     Max_Num<-dplyr::filter(source_df,SNP_ID%in%merged_vars)%>%
       dplyr::filter((REFcount>0&ALTcount==0&OTHcount==0) | (ALTcount>0&REFcount==0&OTHcount==0))%>%
-      dplyr::group_by(SNP_ID)%>%dplyr::summarize(Count=n())%>%
+      dplyr::group_by(SNP_ID)%>%dplyr::summarize(Count=dplyr::n())%>%
       dplyr::arrange(-Count)%>%dplyr::slice(1)%>%dplyr::pull(Count)
     Max_Num_Table<-tibble::tibble(Sample_ID=Sample,Max_single_SNP_cell_Number=Max_Num,Num_valid_cells=length(A_allele_cells)+length(B_allele_cells),
                           Num_A_cells=length(A_allele_cells),Num_B_cells=length(B_allele_cells),Num_Fail_cells=length(Fail_cells),Reference_Gene=str_c(reference_genes,collapse=","),Num_Reference_Gene=length(unique(reference_genes)),
@@ -416,7 +416,71 @@ for(CLST_ID in unique(CLST1)){
 #'   * FALSE: Include ASE profiles of SNPs on escapee genes when calculating correlations between pseudobulk ASE profiles.
 #' @param PVAL_THR Threshold for P-values and absolute correlation coefficients in the correlation analysis of pseudobulk profiles generated for reference SNPs.
 #' @param RHO_THR Threshold for absolute correlation coefficients in the correlation analysis of pseudobulk profiles generated for reference SNPs.
+#' @return A list of objects ($result, $raw_exp_result, $Fail_list) representing the results of scLinaX.
+#' Additional objects representing intermediate results of scLinaX are also included in the list ($clustering_result, $Max_Num_Table_result, $df_snp_summary, $phasing_result).
+#' While users may not typically need to use these intermediate objects directly, they are provided for reference.
+#'
+#' * $result: A per-sample raw result of scLinaX. This data has redundancy and should be summarized using the `summarize_scLinaX` function before analysis.
+#'
+#'   The dataframe ($result) has the following columns:
+#'
+#'   - Sample_ID: Sample ID
+#'   - SNP_ID: SNP identifier
+#'   - CHR: PAR or nonPAR
+#'   - POS: Genomic position of the SNP (GRCh38)
+#'   - REF: Reference allele of the SNP {A,T,G,C}
+#'   - ALT: Alternative allele of the SNP {A,T,G,C}
+#'   - Gene: Gene name
+#'   - XCI_status: XCI status {escape, variable, inactive, unknown}
+#'   - Gene_class: XCI status combined with CHR information {PAR1, nonPAR_escape, nonPAR_variable, nonPAR_inactive, nonPAR_unknown, PAR2}
+#'   - Used_as_refGene: Whether the Gene was used as a reference gene {Yes, No}
+#'   - Used_as_refSNP: Whether the SNP_ID was used as a reference SNP {Yes, No}
+#'   - Total_A_allele, Total_B_allele: Total allele count of allele A and B
+#'   - Total_allele: Total allele count of the SNP
+#'   - Expressing_cells: Number of cells expressing the SNP
+#'   - minor_allele_ratio: Ratio of the expression from the allele (A, B) with lower expression
+#'   - Reference_Gene, Reference_SNP: A list of genes used as reference genes and SNPs
+#'   - Num_Reference_Gene, Num_Reference_SNP: Number of reference genes and SNPs
+#'   - Reference_Cell_Count: Number of cells showing mono-allelic expression of reference SNPs
+#'   - Num_A_cells, Num_B_cells: Number of cells showing mono-allelic expression of A and B alleles of reference SNPs
+#'   - Num_Fail_cells: Number of cells showing bi-allelic expression of reference SNPs (should be removed from the analysis)
+#'
+#' * $raw_exp_result: A per-sample raw result of scLinaX.
+#'
+#'   The dataframe ($raw_exp_result) has the following columns:
+#'
+#'   - cell_barcode: Cell barcode
+#'   - Sample_ID: Sample ID
+#'   - SNP_ID: SNP identifier
+#'   - CHR: PAR or nonPAR
+#'   - POS: Genomic position of the SNP (GRCh38)
+#'   - REF: Reference allele of the SNP {A,T,G,C}
+#'   - ALT: Alternative allele of the SNP {A,T,G,C}
+#'   - REFcount: Allelic expression of the reference allele
+#'   - ALTcount: Allelic expression of the alternative allele
+#'   - OTHcount: Allelic expression of the other allele
+#'   - Gene: Gene name
+#'   - XCI_status: XCI status {escape, variable, inactive, unknown}
+#'   - Gene_class: XCI status combined with CHR information {PAR1, nonPAR_escape, nonPAR_variable, nonPAR_inactive, nonPAR_unknown, PAR2}
+#'   - Used_as_refGene: Whether the Gene was used as a reference gene {Yes, No}
+#'   - Used_as_refSNP: Whether the SNP_ID was used as a reference SNP {Yes, No}
+#'   - Xa: Information of the activated X chromosome {Allele_A, Allele_B}
+#'   - Reference_Gene, Reference_SNP: A list of genes used as reference genes and SNPs
+#'
+#' * $Fail_list: List of samples for which scLinaX analysis failed.
+#'
+#' * $clustering_result: Result of the grouping of reference SNPs. Cluster names are in the format {Sample_ID}_cluster_{cluster_ID}.
+#'
+#' * $Max_Num_Table_result: A dataframe describing the number of cells.
+#'
+#' * $df_snp_summary: An original dataframe from which Spearman correlation between pseudobulk ASE profiles is calculated.
+#'
+#' * $phasing_result: Result of the Spearman correlation analysis for pseudobulk ASE profiles.
+#'
+#'
 #' @export
+
+
 
 run_scLinaX<-function(ASE_df,XCI_ref,QCREF,Inactive_Gene_ratio_THR=0.05,SNP_DETECTION_DP=30,SNP_DETECTION_MAF=0.1,QC_total_allele_THR=10,
                       HE_allele_cell_number_THR=50,REMOVE_ESCAPE=TRUE,PVAL_THR=0.01,RHO_THR=0.5){
@@ -433,7 +497,7 @@ Fail_list<-c("Following samples were failed during phasing")
 valid_ref_genes<-Gene_QC(QCREF,Inactive_Gene_ratio_THR)
 
 #QC for ASE df
-QCed_df<-make_QCed_df(data,XCI_ref,SNP_DETECTION_DP,SNP_DETECTION_MAF)
+QCed_df<-make_QCed_df(ASE_df,XCI_ref,SNP_DETECTION_DP,SNP_DETECTION_MAF)
 
 #candidate ref SNP & test sample list
 per_SNP_sample<-make_per_SNP_sample_df(QCed_df)
@@ -479,6 +543,39 @@ return(scLinaX_obj)
 #' @param Annotation A dataframe (tibble) for the annotation of the cells. This dataframe should have the following columns:
 #'   * cell_barcode
 #'   * Annotation
+#'
+#' @return A dataframe (tibble) containing scLinaX results.
+#'
+#' If no Annotation is supplied, this function returns the ratio of expression from the inactivated X chromosome for all cells.
+#' If Annotation is supplied, this function returns the ratio of expression from the inactivated X chromosome for each cell annotation.
+#'
+#' The dataframe includes the following columns:
+#'
+#' - Sample_ID: Sample ID
+#' - SNP_ID: SNP identifier
+#' - CHR: PAR or nonPAR
+#' - POS: Genomic position of the SNP (GRCh38)
+#' - REF: Reference allele of the SNP {A,T,G,C}
+#' - ALT: Alternative allele of the SNP {A,T,G,C}
+#' - Gene: Gene name
+#' - XCI_status: XCI status {escape, variable, inactive, unknown}
+#' - Gene_class: XCI status combined with CHR information {PAR1, nonPAR_escape, nonPAR_variable, nonPAR_inactive, nonPAR_unknown, PAR2}
+#' - Used_as_refGene: Whether the Gene was used as a reference gene {Yes, No}
+#' - Used_as_refSNP: Whether the SNP_ID was used as a reference SNP {Yes, No}
+#' - Total_A_allele, Total_B_allele: Total allele count of allele A and B
+#' - Total_allele: Total allele count of the SNP
+#' - Expressing_cells: Number of cells expressing the SNP
+#' - minor_allele_ratio: Ratio of the expression from the allele (A, B) with lower expression (=Ratio of the expression from Xi)
+#' - Reference_Gene, Reference_SNP: A list of genes used as reference genes and SNPs
+#' - Num_Reference_Gene, Num_Reference_SNP: Number of reference genes and SNPs
+#' - Reference_Cell_Count: Number of cells showing mono-allelic expression of reference SNPs
+#' - Num_A_cells, Num_B_cells: Number of cells showing mono-allelic expression of A and B alleles of reference SNPs
+#' - Num_Fail_cells: Number of cells showing bi-allelic expression of reference SNPs (should be removed from the analysis)
+#'
+#' If in per-cell annotation mode, it includes these additional columns:
+#'
+#' - Major_allele: The allele with the higher read count {A, B}
+#' - Annotation: Cell annotation
 #' @export
 
 summarize_scLinaX<-function(scLinaX_obj,QC_total_allele_THR=10,Annotation=NULL){
@@ -508,7 +605,7 @@ summarize_scLinaX<-function(scLinaX_obj,QC_total_allele_THR=10,Annotation=NULL){
       dplyr::group_by(Sample_ID,SNP_ID,CHR,POS,Major_allele,Reference_SNP,REF,ALT,Gene,XCI_status,Gene_class,
                Used_as_refGene,Used_as_refSNP,Reference_Gene,Annotation)%>%
       dplyr::summarize(Major_allele_count=sum(Major_allele_count),Minor_allele_count=sum(Minor_allele_count),
-                Total_allele=sum(Total_allele_count),Reference_Cell_Count=n())%>%
+                Total_allele=sum(Total_allele_count),Reference_Cell_Count=dplyr::n())%>%
       dplyr::ungroup()%>%
       mutate(minor_allele_ratio=Minor_allele_count/Total_allele)%>%
       dplyr::filter(Total_allele>=QC_total_allele_THR)

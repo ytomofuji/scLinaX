@@ -1,5 +1,5 @@
 #' @importFrom dplyr filter select group_by summarize ungroup mutate left_join
-#' @importFrom dplyr arrange distinct slice pull rename inner_join bind_rows
+#' @importFrom dplyr arrange distinct slice pull rename inner_join bind_rows n n_distinct
 #' @importFrom tibble tibble
 #' @importFrom stringr str_c
 #' @importFrom magrittr %>%
@@ -15,7 +15,7 @@ utils::globalVariables(c("ALT", "ALT1", "ALT2", "ALTcount", "ALTratio", "A_allel
                          "Sample_N", "TOTALcount", "Total_A_allele", "Total_B_allele", "Total_allele",
                          "Total_allele_count", "Used_as_refGene", "Used_as_refSNP", "XCI_annotation",
                          "XCI_ref", "XCI_status", "Xa", "case_when", "cell_barcode", "data", "flip_or_not",
-                         "median", "minor_allele_ratio", "n", "n_distinct", "rho", "tag"))
+                         "median", "minor_allele_ratio", "n", "dplyr::n_distinct", "rho", "tag"))
 
 #' Create a dataframe for QC of candidate reference genes
 #' @inheritParams run_scLinaX
@@ -77,7 +77,7 @@ summarize_QC_gene_table<-function(Ref_Gene_QC,SAMPLE_NUM_THR=3){
     dplyr::arrange(-Total_allele)%>%dplyr::slice(1)%>%dplyr::ungroup()%>%
     dplyr::group_by(Gene)%>%
     dplyr::summarize(Mean_AR=mean(minor_allele_ratio),SD_AR=sd(minor_allele_ratio),
-              Mean_Total_allele=mean(Total_allele),SD_Total_allele=sd(Total_allele),Sample_N=n_distinct(Sample_ID),Count=n())%>%
+              Mean_Total_allele=mean(Total_allele),SD_Total_allele=sd(Total_allele),Sample_N=dplyr::n_distinct(Sample_ID),Count=dplyr::n())%>%
     dplyr::ungroup()%>%
     dplyr::filter(Sample_N>=SAMPLE_NUM_THR)%>%
     dplyr::arrange(-Mean_AR)
@@ -87,7 +87,7 @@ summarize_QC_gene_table<-function(Ref_Gene_QC,SAMPLE_NUM_THR=3){
     dplyr::arrange(-Total_allele)%>%slice(1)%>%ungroup()%>%
     dplyr::group_by(Reference_Gene)%>%
     dplyr::summarize(Mean_AR=mean(minor_allele_ratio),SD_AR=sd(minor_allele_ratio),
-              Mean_Total_allele=mean(Total_allele),SD_Total_allele=sd(Total_allele),Sample_N=n_distinct(Sample_ID),Count=n())%>%
+              Mean_Total_allele=mean(Total_allele),SD_Total_allele=sd(Total_allele),Sample_N=dplyr::n_distinct(Sample_ID),Count=dplyr::n())%>%
     dplyr::ungroup()%>%
     dplyr::filter(Sample_N>=SAMPLE_NUM_THR)%>%
     dplyr::arrange(-Mean_AR)
@@ -107,6 +107,16 @@ summarize_QC_gene_table<-function(Ref_Gene_QC,SAMPLE_NUM_THR=3){
 #' Run Gene Quality Control (QC) function
 #' @inheritParams run_scLinaX
 #' @inheritParams summarize_QC_gene_table
+#' @return A dataframe (tibble) with the following columns:
+#' - Gene: Gene name
+#' - Mean_AR_target, SD_AR_target: Mean and standard deviation of the ratio of expression from Xi across other candidate reference genes when the SNPs on the gene were used as references
+#' - Mean_AR_reference, SD_AR_reference: Mean and standard deviation of the ratio of expression from Xi for the gene when SNPs on other candidate reference genes were used as references
+#' - Mean_Total_allele_target, SD_Total_allele_target: Mean and standard deviation of the total allele count across data points when calculating the ARs defined above for `target`.
+#' - Mean_Total_allele_reference, SD_Total_allele_reference: Mean and standard deviation of the total allele count across data points when calculating the ARs defined above for `reference`.
+#' - Sample_N_target: Number of samples calculating the ARs defined above for `target`.
+#' - Sample_N_reference: Number of samples calculating the ARs defined above for `reference`.
+#' - Count_target: Number of data points calculating the ARs defined above for `target`.
+#' - Count_reference: Number of data points calculating the ARs defined above for `reference`.
 #' @export
 
 

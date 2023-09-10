@@ -25,8 +25,8 @@
 #' This dataframe contains XCI status data, originally sourced from Tukiainen et al., Nature, 2017, with additional manual curation.
 #'
 #' @format ## `XCI_ref`
-#' \describe{
 #' A dataframe (tibble) with the following columns:
+#' \describe{
 #'   \item{Gene}{Gene name}
 #'   \item{XCI_status}{XCI status: escape, variable, inactive}
 #'   ...
@@ -43,8 +43,8 @@
 #' This dataframe (tibble) was generated for the quality control (QC) of reference genes using the AIDA dataset. It was processed using the `run_RefGeneQC` function.
 #'
 #' @format ## `AIDA_QCREF`
-#' \describe{
 #' A dataframe (tibble) with the following columns:
+#' \describe{
 #'   \item{Gene}{Gene name}
 #'   \item{Mean_AR_target}{Average ratio of expression from Xi across other candidate reference genes when the SNPs on the gene were used as references}
 #'   \item{Mean_AR_reference}{Average ratio of expression from Xi for the gene when SNPs on other candidate reference genes were used as references}
@@ -62,8 +62,8 @@
 #' 	A dataframe (tibble) for the annotation of the cells in the 10X multiome dataset. Annotation was performed with reference-based mapping with Azimuth <https://azimuth.hubmapconsortium.org/>.
 #'
 #' @format ## `multiome_Annotation`
-#' \describe{
 #' A dataframe (tibble) with the following columns:
+#' \describe{
 #'   \item{cell_barcode}{Cell barcode}
 #'   \item{Annotation}{Annotation of the cell}
 #'   ...
@@ -98,9 +98,10 @@
 #' Test peak data for scLinaX-multi.
 #' @description
 #' A dataframe (tibble) containing peak information obtained from single-cell chromatin accessibility data. This data was generated from 10X multiome data using Signac, following the tutorial at <https://stuartlab.org/signac/>.
-#' \describe{
+#'
 #' @format ## `multiome_peak_data`
 #' A dataframe (tibble) with the following columns:
+#' ' \describe{
 #'   \item{start}{Genomic position of the start of the peak}
 #'   \item{end}{Genomic position of the end of the peak}
 #'   \item{Peak_name}{Name of the peak}
