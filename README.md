@@ -39,13 +39,16 @@ Overview of scLinaX-multi
 ## Installation
 
 You can install the development version of scLinaX from
-[GitHub](https://github.com/) with: For usage, please check our
-vignette.
+[GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("ytomofuji/scLinaX")
 ```
+
+## User Guide
+
+Please see [scLinaX User Guide](https://ytomofuji.github.io/scLinaX/).
 
 ## Contact
 

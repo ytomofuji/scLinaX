@@ -33,12 +33,14 @@ knitr::include_graphics("man/figures/scLinaX_multi_overview.png")
 ## Installation
 
 You can install the development version of scLinaX from [GitHub](https://github.com/) with:
-For usage, please check our vignette.
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("ytomofuji/scLinaX")
 ```
+
+## User Guide
+Please see [scLinaX User Guide](https://ytomofuji.github.io/scLinaX/).
 
 ## Contact
 Yoshihiko Tomofuji: ytomofuji_at_sg.med.osaka-u.ac.jp

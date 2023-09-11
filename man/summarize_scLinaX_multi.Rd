@@ -20,8 +20,8 @@ summarize_scLinaX_multi(phased_df, QC_total_allele_THR = 10, Annotation = NULL)
 \value{
 A dataframe (tibble) containing scLinaX-multi results.
 
-If no Annotation is supplied, this function returns the ratio of expression from the inactivated X chromosome for all cells.
-If Annotation is supplied, this function returns the ratio of expression from the inactivated X chromosome for each cell annotation.
+If no Annotation is supplied, this function returns the ratio of accessible chromatin derived from the inactivated X chromosome for all cells.
+If Annotation is supplied, this function returns the ratio of accessible chromatin derived from the inactivated X chromosome for each cell annotation.
 
 The dataframe includes the following columns:
 \itemize{
