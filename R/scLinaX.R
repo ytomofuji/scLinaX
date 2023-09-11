@@ -55,7 +55,7 @@ make_QCed_df<-function(DATA,XCI_ref,SNP_DETECTION_DP=30,SNP_DETECTION_MAF=0.1){
     dplyr::mutate(TOTALcount=REFcount+ALTcount)%>%
     dplyr::mutate(ALTratio=ALTcount/TOTALcount)
 
-  write_tsv(per_sample_SNP,"Initial_total_allele_count_vs_ALT_allele_ratio.tsv.gz")
+  #write_tsv(per_sample_SNP,"Initial_total_allele_count_vs_ALT_allele_ratio.tsv.gz")
 
   #QC based on MAF and DP
   QCpassed_var_cell<-dplyr::filter(per_sample_SNP,TOTALcount>=SNP_DETECTION_DP)%>%
