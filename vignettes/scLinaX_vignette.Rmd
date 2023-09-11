@@ -32,6 +32,16 @@ data("multiome_ASE_df")
 data("multiome_Annotation")
 ```
 
+If you would like to run scLinaX with your data, please prepare ASE data and cell annotation data.
+In the original manuscript, we prepared ASE data using cellsnp-lite and Annovar.
+We applied QC, namely variant filtering based on the allele frequency in the reference panels (e.g. 1000 genome project dataset).
+The format should be like below (Please also see the reference for the dataset).
+```{r}
+head(multiome_ASE_df)
+head(multiome_Annotation)
+```
+
+
 Let's run scLinaX! The result will be a list object including `$reuslt` and `$raw_exp_result` which are used in the subsequent process.
 ```{r}
 scLinaX_res<-run_scLinaX(ASE_df=multiome_ASE_df,XCI_ref=XCI_ref,QCREF=AIDA_QCREF,
@@ -150,6 +160,7 @@ Although we supply the `AIDA_QCREF` object which was generated from the AIDA dat
 Here, we demonstrated the usage of the function for making such data.
 Note that we strongly recommend using this function with a large number of samples.
 For demonstration, we use this function for a multiome dataset, a single sample dataset, but this is not recommended in the actual analysis.
+
 
 ## Usage
 ```{r}
