@@ -226,6 +226,8 @@ if(nrow(Merge_list)>0){ #### if node to dealt with the case where there were no 
   Merge_list<-tibble::tibble(SNP1=NA,SNP2=NA,NUM_SNP1=NA,NUM_SNP2=NA,NUM_REF_REF=NA,NUM_REF_ALT=NA,NUM_ALL_intersect=NA,flip_or_not=NA)
   CLST1<-c(1)
   names(CLST1)<-cand_ref_snps
+  df_snp<-tibble()
+  phasing_result<-tibble()
 }
 
 #make a list of outputs
