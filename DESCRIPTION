@@ -1,15 +1,15 @@
 Package: scLinaX
 Type: Package
 Title: Grouping cells according to the X chromosome subjected to X chromosome inactivation (XCI) in order to assess escape from XCI
-Version: 0.1.0
+Version: 0.1.1
 Author: Yoshihiko Tomofuji
 Maintainer: Yoshihiko Tomofuji <ytomofuji@sg.med.osaka-u.ac.jp>
-Description: Grouping cells according to the X chromosome subjected to X chromosome inactivation (XCI) in order to assess escape from XCI. Details are described in our manuscript (in prepartion).
+Description: Grouping cells according to the X chromosome subjected to X chromosome inactivation (XCI) in order to assess escape from XCI. Details are described in our manuscript (Tomofuji Y et al. Cell Genomics 2024; https://doi.org/10.1016/j.xgen.2024.100625).
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Imports:
     GenomicRanges,
     IRanges,
@@ -25,6 +25,8 @@ Depends:
 Suggests: 
     knitr,
     rmarkdown,
-    ggplot2
+    ggplot2,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
 URL: https://ytomofuji.github.io/scLinaX/
+Config/testthat/edition: 3
