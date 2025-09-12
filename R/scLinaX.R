@@ -119,7 +119,9 @@ make_pseudobulk_refSNP<-function(DF,REFSNP){
   #Flip REF and ALT because cells in ref_pseudobulk and alt_presudobulk have different Xi
   alt_pseudobulk<-dplyr::filter(DF,cell_barcode %in% altcell)%>%
     dplyr::group_by(SNP_ID,CHR,POS,REF,ALT,Gene_class)%>%
-    dplyr::summarize(REFcount=sum(ALTcount),ALTcount=sum(REFcount))%>%
+    # dplyr::summarize(REFcount=sum(ALTcount),ALTcount=sum(REFcount))%>% ## ALTcount ends up copying the previous REFcount (i.e., REFcount=ALTcount after summarize)
+    dplyr::summarize(REFcount0=sum(ALTcount),ALTcount0=sum(REFcount))%>%
+    dplyr::rename(REFcount=REFcount0,ALTcount=ALTcount0)%>%
     dplyr::ungroup()
 
   #merge ref/alt _pseudobulk
@@ -237,10 +239,6 @@ result_list=list(raw_expdf_for_clst=raw_expdf_for_clst,df_snp=df_snp,Merge_list=
 return(result_list)
 
 }
-
-
-
-
 
 #' Define groups for SNP alleles (for internal use only)
 #' @param CLST1 Output from the clustering function
